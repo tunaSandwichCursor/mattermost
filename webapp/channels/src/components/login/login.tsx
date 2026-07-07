@@ -62,6 +62,15 @@ import './login.scss';
 
 const MOBILE_SCREEN_WIDTH = 1200;
 
+// Demo branch (demo-main) only: automatically sign in as the primary demo
+// user when running against a local dev server. Disable for a single visit
+// with http://localhost:8065/login?no_auto_login=1 (e.g. to demo the login
+// screen or sign in as a different user). Only attempted once per tab, so
+// logging out does not immediately log you back in.
+const DEMO_AUTO_LOGIN_USER = 'lucas';
+const DEMO_AUTO_LOGIN_PASSWORD = 'Password123!';
+const DEMO_AUTO_LOGIN_ATTEMPTED_KEY = 'demo_auto_login_attempted';
+
 type LoginProps = {
     onCustomizeHeader?: CustomizeHeaderType;
 };
@@ -514,6 +523,27 @@ const Login = ({onCustomizeHeader}: LoginProps) => {
             }
         }
     }, []);
+
+    // Demo auto-login (see DEMO_AUTO_LOGIN_USER above). Waits for the store
+    // to finish initializing because `submit` is only defined once the
+    // component renders past its loading state.
+    useEffect(() => {
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (
+            initializing ||
+            !isLocalhost ||
+            currentUser ||
+            isDesktopApp() ||
+            searchParam.get('server_token') ||
+            searchParam.has('no_auto_login') ||
+            sessionStorage.getItem(DEMO_AUTO_LOGIN_ATTEMPTED_KEY)
+        ) {
+            return;
+        }
+
+        sessionStorage.setItem(DEMO_AUTO_LOGIN_ATTEMPTED_KEY, '1');
+        submit({loginId: DEMO_AUTO_LOGIN_USER, password: DEMO_AUTO_LOGIN_PASSWORD});
+    }, [initializing]);
 
     useEffect(() => {
         configureTitle();
