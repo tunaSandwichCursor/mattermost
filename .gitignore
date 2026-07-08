@@ -172,6 +172,7 @@ docker-compose.override.yaml
 !.cursor/cursor.md
 !.cursor/Dockerfile
 !.cursor/environment.json
+!.cursor/skills/
 !.cursor/scripts/
 .cursor/scripts/*
 !.cursor/scripts/cloud-agent-install.sh
