@@ -1,0 +1,6 @@
+# Debug agent local secrets and install artifacts
+.env
+.env.local
+node_modules/
+dist/
+.agent.pid
