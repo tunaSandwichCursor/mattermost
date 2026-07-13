@@ -13,6 +13,13 @@ config/mattermost.mattermost-license
 config/config.json
 config/*.crt
 
+# Debug agent (demo-branch companion service)
+demo/debug-agent/.env
+demo/debug-agent/.env.local
+demo/debug-agent/node_modules/
+demo/debug-agent/dist/
+demo/debug-agent/.agent.pid
+
 web/static/js/bundle*.js
 web/static/js/bundle*.js.map
 web/static/js/libs*.js
