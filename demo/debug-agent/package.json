@@ -1,0 +1,28 @@
+{
+  "name": "mattermost-debug-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mattermost @debug bot bridge powered by the Cursor SDK",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "start:dry": "DEBUG_AGENT_DRY_RUN=1 tsx src/index.ts",
+    "test": "tsx src/mention.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "@cursor/sdk": "^1.0.23",
+    "@mattermost/client": "^11.8.0",
+    "@mattermost/types": "^11.8.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
