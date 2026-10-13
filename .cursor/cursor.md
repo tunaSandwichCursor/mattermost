@@ -6,7 +6,7 @@ These instructions apply to Cursor Cloud Agents after `.cursor/scripts/cloud-age
 
 - Docker must be available. If `docker info` fails, inspect `/tmp/docker-service-start.log` and `/tmp/dockerd.log`; do not assume a snapshot will provide Docker.
 - The image includes Go, Node/npm, Docker Compose, and AWS CLI v2.
-- Cursor should provide `mattermost/enterprise` through the multi-repo environment. The expected layout is sibling repositories, such as `/agent/repos/mattermost` and `/agent/repos/enterprise`; this matches `server/Makefile`'s default `../../enterprise` path.
+- This fork has no access to `mattermost/enterprise`; the server builds as Team Edition. Do not try to clone or wire up an enterprise checkout.
 
 ## Running Mattermost
 
@@ -35,7 +35,7 @@ The Mattermost server is expected at `http://localhost:8065`. The webapp dev ser
 
 ### Known-good Cloud flow
 
-- In this multi-repo Cloud environment, `mattermost` and `enterprise` are expected to start from `master`, so sibling checkout skew should not need extra handling.
+- The demo branch is `demo-main`; `make demo` from the repo root starts everything (see `demo/README.md`).
 - `server/Makefile`'s `run` target only reaches `run-client` if the server is backgrounded. In Cloud, the reliable combined startup is:
 
   ```bash

@@ -95,8 +95,8 @@ verify_enterprise_checkout() {
 
   local target
   if ! target="$(find_enterprise_checkout)"; then
-    log "Enterprise checkout not found. Ensure the Cursor multi-repo environment includes github.com/mattermost/enterprise."
-    return 1
+    log "Enterprise checkout not found; building Team Edition (server/Makefile falls back to BUILD_ENTERPRISE_READY=false)."
+    return 0
   fi
 
   log "Enterprise checkout ready at $target."

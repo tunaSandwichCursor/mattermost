@@ -16,10 +16,10 @@ The Docker build context is `.cursor/` only. The Dockerfile intentionally does n
 
 ## Runtime Hooks
 
-- `cloud-agent-install.sh` runs after Cursor checks out the repo. It refreshes nvm, verifies Cursor's multi-repo `mattermost/enterprise` checkout, runs `server` Go dependency hydration, installs webapp dependencies, and runs Playwright `npm ci`.
+- `cloud-agent-install.sh` runs after Cursor checks out the repo. It refreshes nvm, checks for an optional `mattermost/enterprise` sibling checkout (falls back to Team Edition when absent), runs `server` Go dependency hydration, installs webapp dependencies, and runs Playwright `npm ci`.
 - `cloud-agent-start.sh` materializes `.cursor/cursor.md` as `.cursor/AGENTS.md`, fixes current-session Docker socket access, starts Docker, waits until `docker info` and `docker compose version` succeed, then logs in to Docker Hub when credentials are configured.
 
-The environment declares `github.com/mattermost/enterprise` in `repositoryDependencies` so Cursor can provide it as part of the multi-repo workspace. Cursor currently clones the repositories as siblings, such as `/agent/repos/mattermost` and `/agent/repos/enterprise`, which matches `server/Makefile`'s default `../../enterprise` path. The install hook does not clone, pull, or symlink enterprise.
+The demo fork (`tunaSandwichCursor/mattermost`) does not have access to the private `mattermost/enterprise` repo, so `repositoryDependencies` is intentionally empty and the server builds as Team Edition. If an enterprise checkout is present as a sibling (`../../enterprise`, matching `server/Makefile`'s default), it is picked up automatically. The install hook does not clone, pull, or symlink enterprise.
 
 ## Useful Skips
 
