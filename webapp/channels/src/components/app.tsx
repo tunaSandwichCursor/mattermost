@@ -4,6 +4,7 @@
 import React, {lazy} from 'react';
 import {Provider} from 'react-redux';
 import {Router} from 'react-router-dom';
+import {CompatRouter} from 'react-router-dom-v5-compat';
 
 import store from 'stores/redux_store';
 
@@ -18,7 +19,10 @@ const App = () => {
     return (
         <Provider store={store}>
             <Router history={getHistory()}>
-                <Root/>
+                {/* Runs react-router v6 alongside v5 so routes can migrate to v6 APIs one Switch at a time */}
+                <CompatRouter>
+                    <Root/>
+                </CompatRouter>
             </Router>
         </Provider>
     );

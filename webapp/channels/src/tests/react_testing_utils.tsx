@@ -5,10 +5,12 @@ import {act, render, renderHook} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type {History} from 'history';
 import {createBrowserHistory} from 'history';
-import React from 'react';
+import React, {useLayoutEffect, useState} from 'react';
 import {IntlProvider} from 'react-intl';
 import {Provider} from 'react-redux';
 import {Router} from 'react-router-dom';
+import {Route as RouteV6, Router as RouterV6, Routes as RoutesV6} from 'react-router-dom-v5-compat';
+import type {NavigationType} from 'react-router-dom-v5-compat';
 import type {Reducer} from 'redux';
 
 import type {DeepPartial} from '@mattermost/types/utilities';
@@ -185,18 +187,49 @@ const Providers = ({children, store, history, options}: RenderStateProps) => {
     return (
         <Provider store={store}>
             <Router history={history}>
-                <SharedPackageProvider>
-                    <IntlProvider
-                        locale={options.locale}
-                        messages={options.intlMessages}
-                    >
-                        <WebSocketContext.Provider value={WebSocketClient}>
-                            {children}
-                        </WebSocketContext.Provider>
-                    </IntlProvider>
-                </SharedPackageProvider>
+                <TestCompatRouter history={history}>
+                    <SharedPackageProvider>
+                        <IntlProvider
+                            locale={options.locale}
+                            messages={options.intlMessages}
+                        >
+                            <WebSocketContext.Provider value={WebSocketClient}>
+                                {children}
+                            </WebSocketContext.Provider>
+                        </IntlProvider>
+                    </SharedPackageProvider>
+                </TestCompatRouter>
             </Router>
         </Provider>
+    );
+};
+
+/**
+ * Equivalent of CompatRouter from react-router-dom-v5-compat, which makes the react-router v6 APIs available
+ * alongside v5 while the app migrates. The real CompatRouter reads the v5 history with useHistory, which
+ * tests/react-router-dom_mock.ts replaces with a static mock, so the v6 router is driven from the same history
+ * object given to the v5 Router instead to keep both routers on the same location.
+ */
+const TestCompatRouter = ({history, children}: {history: History<unknown>; children: React.ReactNode}) => {
+    const [state, setState] = useState({location: history.location, action: history.action});
+
+    useLayoutEffect(() => {
+        return history.listen((location, action) => setState({location, action}));
+    }, [history]);
+
+    return (
+        <RouterV6
+            navigationType={state.action as NavigationType}
+            location={state.location}
+            navigator={history}
+        >
+            <RoutesV6>
+                <RouteV6
+                    path='*'
+                    element={children}
+                />
+            </RoutesV6>
+        </RouterV6>
     );
 };
 

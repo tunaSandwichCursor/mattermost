@@ -1,10 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {createMemoryHistory} from 'history';
 import React from 'react';
 import {FormattedMessage, useIntl} from 'react-intl';
 import {connect, useDispatch, useSelector} from 'react-redux';
-import {Link, Route} from 'react-router-dom';
+import {Link, Route, useLocation} from 'react-router-dom';
+import {
+    Link as LinkV6,
+    Route as RouteV6,
+    Routes,
+    useLocation as useLocationV6,
+    useNavigate,
+    useParams,
+} from 'react-router-dom-v5-compat';
 
 import {GenericModal} from '@mattermost/components';
 
@@ -94,6 +103,75 @@ describe('renderWithContext', () => {
 
         expect(screen.getByText('this is the route component')).toBeInTheDocument();
         expect(screen.getByRole('link', {name: 'Test Link'})).toBeInTheDocument();
+    });
+
+    test('should be able to render react-router v6 components from the compat package', () => {
+        const history = createMemoryHistory({initialEntries: ['/team-name/channels/town-square?foo=bar']});
+
+        const RouteComponent = () => {
+            const params = useParams();
+            return <div>{`v6 route for ${params.team} / ${params.channel}`}</div>;
+        };
+        const TestComponent = () => {
+            return (
+                <div>
+                    <Routes>
+                        <RouteV6
+                            path='/:team/channels/:channel'
+                            element={<RouteComponent/>}
+                        />
+                    </Routes>
+                    <LinkV6 to='/another_page'>{'Test v6 Link'}</LinkV6>
+                </div>
+            );
+        };
+
+        renderWithContext(<TestComponent/>, {}, {history});
+
+        expect(screen.getByText('v6 route for team-name / town-square')).toBeInTheDocument();
+        expect(screen.getByRole('link', {name: 'Test v6 Link'})).toHaveAttribute('href', '/another_page');
+    });
+
+    test('should keep react-router v5 and v6 on the same location when navigating with either API', async () => {
+        const history = createMemoryHistory({initialEntries: ['/start']});
+
+        const TestComponent = () => {
+            const locationV5 = useLocation();
+            const locationV6 = useLocationV6();
+            const navigate = useNavigate();
+
+            return (
+                <div>
+                    <span>{`v5: ${locationV5.pathname}${locationV5.search}`}</span>
+                    <span>{`v6: ${locationV6.pathname}${locationV6.search}`}</span>
+                    <button onClick={() => navigate('/from-v6?query=1')}>{'Navigate with v6'}</button>
+                    <button onClick={() => navigate(-1)}>{'Go back with v6'}</button>
+                    <button onClick={() => history.push('/from-v5')}>{'Navigate with v5'}</button>
+                </div>
+            );
+        };
+
+        renderWithContext(<TestComponent/>, {}, {history});
+
+        expect(screen.getByText('v5: /start')).toBeInTheDocument();
+        expect(screen.getByText('v6: /start')).toBeInTheDocument();
+
+        await userEvent.click(screen.getByText('Navigate with v6'));
+
+        expect(history.location.pathname).toBe('/from-v6');
+        expect(screen.getByText('v5: /from-v6?query=1')).toBeInTheDocument();
+        expect(screen.getByText('v6: /from-v6?query=1')).toBeInTheDocument();
+
+        await userEvent.click(screen.getByText('Navigate with v5'));
+
+        expect(screen.getByText('v5: /from-v5')).toBeInTheDocument();
+        expect(screen.getByText('v6: /from-v5')).toBeInTheDocument();
+
+        await userEvent.click(screen.getByText('Go back with v6'));
+
+        expect(history.location.pathname).toBe('/from-v6');
+        expect(screen.getByText('v5: /from-v6?query=1')).toBeInTheDocument();
+        expect(screen.getByText('v6: /from-v6?query=1')).toBeInTheDocument();
     });
 
     test('should be able to render components that use connect to access the Redux store', () => {
